@@ -13,7 +13,8 @@ var renderFile = function(file, options, callback) {
 		callback = options;
 		options = {};
 	}
-	options.cwd = path.dirname(file);
+	//options.cwd = path.dirname(file);
+	console.log(file);
 	
 	common.step([
 		function(next) {
@@ -32,17 +33,10 @@ var render = function(src, options, callback) {
 		options = {};
 	}
 	options.locals = options.locals || {};
-	options.visited = options.visited || {};
-	options.cwd = options.cwd || '.';
+//	options.cwd = options.cwd || '.';
 	
 	fns.file = function(filename, callback) {
-		filename = path.join(options.cwd, filename);
-		
-		if (options.visited[filename]) {
-			callback(new Error('circular file reference: '+filename));
-			return;
-		}
-		options.visited[filename] = true;
+//		filename = path.join(options.cwd, filename);
 		renderFile(filename, options, callback);
 	};
 	
