@@ -39,9 +39,19 @@ var aejs = require('async-ejs')
 	.add('mud', rendermud);
 
 var template = function(template, locals) {
+	var getOptions = typeof locals === 'function' ? locals : function(params, callback) {
+		for(var i in locals) {
+			params[i] = params[i] || locals[i];
+		}
+		callback(null, params);
+	};
+	
 	return function(request, response) {
 		common.step([
 			function(next) {
+				getOptions(request.params || {}, next);
+			},
+			function(locals, next) {
 				aejs.renderFile(template, {locals: locals}, next);
 			},
 			function(src) {
