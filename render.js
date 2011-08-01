@@ -75,19 +75,23 @@ var render = function(fn, location, options) {
 					headers['cache-control'] = 'public, max-age=' + options.cacheMaxAge;
 				}
 				response.writeHead(options.status, headers);
-				response.end(css);
+				response.end(result);
 			}
 		], function(err) {
-				response.writeHead(500);
-				response.end();				
+				if(err.errno in {9:1,2:1}) {
+					response.writeHead(404);
+				} else {
+					response.writeHead(500);
+				}
+				response.end();	
 		});
 	};	
 };
 
-var mud = function(location) {
+var mud = function(location, options) {
 	options = options || {};
 	options.status = options.status || 200;
-	options.contentType = 'aplication/javascript';
+	options.contentType = 'application/javascript';
 	
 	return render(rendermud, location, options);
 };
