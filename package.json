@@ -1,18 +1,17 @@
 {
  "name":"bark",
- "version":"0.0.6",
+ "version":"0.1.0",
  "description":"A collection of web rendering functions",
  "keywords": ["framework", "web", "middleware", "render"],
  "author": "Ian Jorgensen <jorgensen.ian@gmail.com>",
  "repository": "git://github.com/ianjorgensen/bark.git",
  "main":"./render.js",
  "dependencies" : {
-	"async-ejs": ">=0.0.1",
-	"github-flavored-markdown": ">=1.0.0",
-	"less": ">=0.0.1",
+	"rex": ">=0.3.2",
+	"jade": ">=0.15.4",
+	"stylus": ">=0.15.2",
 	"mime": ">=0.0.1",
-	"common": ">=0.0.1",
-	"mud": ">=0.0.1"
+	"common": ">=0.2.0"
  },
  "devDependencies": {
 	"router": ">=0.0.1"

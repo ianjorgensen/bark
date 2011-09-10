@@ -1,12 +1,10 @@
 var common = require('common');
-var aejs = require('async-ejs');
-
 var mime = require('mime');
 var fs = require('fs');
 var path = require('path');
 var rex = require('rex');
-var markdown = require('github-flavored-markdown');
-var less = require('less');
+var jade = require('jade');
+var stylus = require('stylus');
 
 var configs = {};
 
@@ -17,17 +15,6 @@ var onfile = function(fn) {
 		}));
 	};
 };
-
-var aejs = require('async-ejs')
-	.add('less', onfile(function(file, callback) {
-		less.render(file, callback);
-	}))
-	.add('markdown', onfile(function(file, callback) {
-		callback(null, markdown.parse(file));
-	}))
-	.create('rex', function(options) {
-		return rex.parser(common.join(options.rex, configs.rex));
-	});
 
 var onsecure = function(fn) {
 	return function(request, response) {
@@ -46,37 +33,60 @@ var normalize = function(locals) {
 	return locals;
 };
 
-exports.renderTemplate = function(template, locals, callback) {
-	if (!callback) {
-		callback = locals;
-		locals = {};
-	}
-	aejs.renderFile(template, {locals:normalize(locals)}, callback);
-};
-
-exports.template = function(template, locals) {
-	var get = typeof locals === 'function' ? locals : function(request) {
-		return common.join(locals, request.params);
-	};
-
+exports.stylus = function(location) {
 	return onsecure(function(request, response) {
 		common.step([
 			function(next) {
-				var params = get(request, response, next);
-
-				if (params && typeof params === 'object') {
-					next(null, params); // shortcut
-				}
+				fs.readFile(common.format(location, request.params), 'utf-8', next);
 			},
-			function(locals, next) {
-				aejs.renderFile(common.format(template, request.params), {locals:normalize(locals)}, next);
+			function(src, next) {
+	            stylus.render(src, next);
+			},
+			function(str) {
+				response.writeHead(200, {
+					'content-type': 'text/html; charset=utf-8',
+					'content-length': Buffer.byteLength(str)
+				});
+				response.end(str);
+			}
+		], function(err) {
+			response.writeHead(500);
+			response.end(err.stack);
+		});
+	});
+};
+exports.rex = function(location) {
+	return onsecure(function(request, response) {
+		common.step([
+			function(next) {
+            	rex.parse(common.format(location, request.params), next);
 			},
 			function(src) {
 				response.writeHead(200, {
-					'content-type': 'text/html; charset=utf-8',
+					'content-type': 'text/javascript; charset=utf-8',
 					'content-length': Buffer.byteLength(src)
 				});
 				response.end(src);
+			}
+		], function(err) {
+			response.writeHead(500);
+			response.end(err.stack);
+		});
+	});
+};
+exports.jade = function(location, locals) {
+	return onsecure(function(request, response) {
+		common.step([
+			function(next) {
+				fs.readFile(common.format(location, request.params), 'utf-8', next);
+			},
+			function(src) {
+			    var str = jade.compile(src, {self:true})(locals);
+				response.writeHead(200, {
+					'content-type': 'text/html; charset=utf-8',
+					'content-length': Buffer.byteLength(str)
+				});
+				response.end(str);
 			}
 		], function(err) {
 			response.writeHead(500);
