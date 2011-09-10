@@ -6,16 +6,6 @@ var rex = require('rex');
 var jade = require('jade');
 var stylus = require('stylus');
 
-var configs = {};
-
-var onfile = function(fn) {
-	return function(filename, callback) {
-		fs.readFile(filename, 'utf-8', common.fork(callback, function(file) {
-			fn(file, callback);
-		}));
-	};
-};
-
 var onsecure = function(fn) {
 	return function(request, response) {
 		if (/(^|\/)\.\.(\/|$)/.test(path.normalize(request.url))) {
@@ -25,12 +15,6 @@ var onsecure = function(fn) {
 		}
 		fn(request, response);
 	};
-};
-
-var normalize = function(locals) {
-	locals.params = locals;
-	locals.bleeting = true;
-	return locals;
 };
 
 exports.stylus = function(location) {
@@ -44,7 +28,7 @@ exports.stylus = function(location) {
 			},
 			function(str) {
 				response.writeHead(200, {
-					'content-type': 'text/html; charset=utf-8',
+					'content-type': 'text/css; charset=utf-8',
 					'content-length': Buffer.byteLength(str)
 				});
 				response.end(str);
@@ -121,8 +105,4 @@ exports.file = function(location, options) {
 			fs.createReadStream(filename).pipe(response);
 		}));
 	});
-};
-exports.config = function(name, options) {
-	configs[name] = options;
-	return exports;
 };
